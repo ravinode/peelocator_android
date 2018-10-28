@@ -26,6 +26,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,7 +41,9 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.peelocator.kira.peelocator.CustomInfoWindowGoogleMap;
+import com.peelocator.kira.peelocator.MainActivity;
 import com.peelocator.kira.peelocator.R;
 import com.peelocator.kira.peelocator.pojo.InfoWindowData;
 import com.peelocator.kira.peelocator.pojo.LatLongReq;
@@ -56,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.content.Context.LOCATION_SERVICE;
 
 public class MapLocationFragment extends Fragment {
@@ -65,6 +69,8 @@ public class MapLocationFragment extends Fragment {
     MapView mMapView;
     private static GoogleMap googleMap;
     static Marker marker;
+
+    private FusedLocationProviderClient client;
 
     ArrayList<LatLng> markerPoints;
 
@@ -79,6 +85,7 @@ public class MapLocationFragment extends Fragment {
         mMapView.onResume();
 
         checkLocationPermission();
+        getFlush();
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
@@ -93,7 +100,7 @@ public class MapLocationFragment extends Fragment {
 
                 if (checkLocationPermission()) {
                     if (ContextCompat.checkSelfPermission(getActivity(),
-                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
 
                         //Request location updates:
@@ -122,47 +129,65 @@ public class MapLocationFragment extends Fragment {
 //
 //                Location location = locationManager.getLastKnownLocation(locationManager
 //                        .getBestProvider(criteria, false));
-                Location location = getLastKnownLocation();
-                if (null != location) {
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
-                    LatLongReq req = new LatLongReq();
-                    req.setLat(latitude);
-                    req.setLog(longitude);
+//                Location location = getLastKnownLocation();
+//                Toast.makeText(getContext(), "Current location:"+location, Toast.LENGTH_LONG).show();
+//                if (null != location) {
+//                    Toast.makeText(getContext(), "Current location:2"+location, Toast.LENGTH_LONG).show();
+//                    double latitude = location.getLatitude();
+//                    double longitude = location.getLongitude();
+//                    LatLongReq req = new LatLongReq();
+//                    req.setLat(latitude);
+//                    req.setLog(longitude);
+//
+//                    Log.i("","++++++++++"+latitude);
+//                    Log.i("","++++++++++"+longitude);
+//                    System.out.print("Location:: "+latitude+" Long ::"+longitude);
+//                    Toast.makeText(getContext(), "Current location:3"+longitude, Toast.LENGTH_LONG).show();
+//
+//                    getLocation(req, getContext());
 
-                    getLocation(req, getContext());
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 14));
 
-                }
-
-            else
-            {
-                Toast.makeText(getContext(), "Current location: is NULL", Toast.LENGTH_LONG).show();
-            }
             }
         });
         return rootView;
     }
 
-    private Location getLastKnownLocation() {
-        Location l=null;
-        LocationManager mLocationManager = (LocationManager)getActivity().getSystemService(LOCATION_SERVICE);
-        List<String> providers = mLocationManager.getProviders(true);
-        Location bestLocation = null;
-        for (String provider : providers) {
-            Toast.makeText(getContext(), "providers:\n" + providers, Toast.LENGTH_LONG).show();
-            if(ContextCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
-                l = mLocationManager.getLastKnownLocation(provider);
-            }
-            if (l == null) {
-                continue;
-            }
-            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                bestLocation = l;
-            }
+    private void getFlush() {
+        client = LocationServices.getFusedLocationProviderClient(getActivity());
+
+//        LocationManager mLocationManager = (LocationManager)getActivity().getSystemService(LOCATION_SERVICE);
+//        List<String> providers = mLocationManager.getProviders(true);
+//        Location bestLocation = null;
+//        for (String provider : providers) {
+//            Toast.makeText(getContext(), "providers:\n" + providers, Toast.LENGTH_LONG).show();
+//            if(ContextCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
+//                l = mLocationManager.getLastKnownLocation(provider);
+//            }
+//            if (l == null) {
+//                continue;
+//            }
+//            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+//                bestLocation = l;
+//            }
+//        }
+
+        if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
         }
-        Toast.makeText(getContext(), "Current location:\n" + bestLocation, Toast.LENGTH_LONG).show();
-        return bestLocation;
+        client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+
+                if (location != null) {
+                    LatLongReq req = new LatLongReq();
+                    req.setLat(location.getLatitude());
+                    req.setLog(location.getLongitude());
+                    getLocation(req, getActivity());
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 14));
+
+                }
+
+            }
+        });
     }
 
 
@@ -192,12 +217,12 @@ public class MapLocationFragment extends Fragment {
 
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION)
+                ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    ACCESS_FINE_LOCATION)) {
 
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
@@ -210,7 +235,7 @@ public class MapLocationFragment extends Fragment {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(getActivity(),new String[]
-                                        {Manifest.permission.ACCESS_FINE_LOCATION},1);
+                                        {ACCESS_FINE_LOCATION},1);
                             }
                         })
                         .create()
@@ -220,7 +245,7 @@ public class MapLocationFragment extends Fragment {
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        new String[]{ACCESS_FINE_LOCATION},
                         1);
             }
             return false;
@@ -241,18 +266,14 @@ public class MapLocationFragment extends Fragment {
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
                     if (ContextCompat.checkSelfPermission(getActivity(),
-                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
 
 
                         googleMap.setMyLocationEnabled(true);
-                        googleMap.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
+                        getFlush();
 
                     }
-
-                } else {
-
-
 
                 }
                 return;
@@ -279,8 +300,8 @@ public class MapLocationFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-           // Toast.makeText(context, "This is my Toast message!" + url,
-             //       Toast.LENGTH_LONG).show();
+            // Toast.makeText(context, "This is my Toast message!" + url,
+            //       Toast.LENGTH_LONG).show();
             JsonObjectRequest jsonObjRequest = new JsonObjectRequest(Request.Method.POST,
                     url, json,
                     new Response.Listener<JSONObject>() {
@@ -297,7 +318,7 @@ public class MapLocationFragment extends Fragment {
                                     Double log = Double.parseDouble(objectInArray.getString("longitude"));
                                     drawMarker(context, new LatLng(lat, log), objectInArray.getString("name"), objectInArray.getString("description"), objectInArray.getString("distance"));
 
-                                   // Toast.makeText(context, "Hello" + objectInArray, Toast.LENGTH_LONG).show();
+                                    // Toast.makeText(context, "Hello" + objectInArray, Toast.LENGTH_LONG).show();
                                 }
                             } catch (JSONException e) {
 
@@ -306,7 +327,8 @@ public class MapLocationFragment extends Fragment {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, "Error", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Error"+error, Toast.LENGTH_LONG).show();
+
 
                 }
             })
@@ -334,53 +356,53 @@ public class MapLocationFragment extends Fragment {
         }
     }
 
-        private static void drawMarker(final Context context, LatLng point, final String text, final String description, final String distance) {
+    private static void drawMarker(final Context context, LatLng point, final String text, final String description, final String distance) {
 
-            marker = googleMap.addMarker(new MarkerOptions().position(point).title(text).alpha(0.7f).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-            googleMap.getUiSettings().setCompassEnabled(true);
-            googleMap.getUiSettings().setMapToolbarEnabled(true);
-            InfoWindowData info = new InfoWindowData();
-            info.setImage("snowqualmie");
-            info.setPrice("Free");
-            info.setDescription(description);
-            info.setDistance("Distance :"+distance);
-            //info.setTransport("Reach the site by bus, car and train.");
+        marker = googleMap.addMarker(new MarkerOptions().position(point).title(text).alpha(0.7f).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        googleMap.getUiSettings().setCompassEnabled(true);
+        googleMap.getUiSettings().setMapToolbarEnabled(true);
+        InfoWindowData info = new InfoWindowData();
+        info.setImage("snowqualmie");
+        info.setPrice("Free");
+        info.setDescription(description);
+        info.setDistance("Distance :"+distance);
+        //info.setTransport("Reach the site by bus, car and train.");
 
-            marker.setTag(info);
-            CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(context);
-            googleMap.setInfoWindowAdapter(customInfoWindow);
-
-
+        marker.setTag(info);
+        CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(context);
+        googleMap.setInfoWindowAdapter(customInfoWindow);
 
 
 
-            googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-
-                @Override
-                public void onInfoWindowClick(Marker marker) {
-
-                    Log.i("+++++","Ravi");
 
 
+        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
-                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-                    final RatingBar rating = new RatingBar(context);
-                    InfoWindowData adata = (InfoWindowData) marker.getTag();
-                    rating.setNumStars(5);
-                    dialog.setTitle( marker.getTitle()).setView(rating)
+            @Override
+            public void onInfoWindowClick(Marker marker) {
 
-                            .setMessage( adata.getDescription())
-                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialoginterface, int i) {
-                                }
-                            }).show();
-                    rating.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                Log.i("+++++","Ravi");
 
-                }
-            });
 
-        }
 
+                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                final RatingBar rating = new RatingBar(context);
+                InfoWindowData adata = (InfoWindowData) marker.getTag();
+                rating.setNumStars(5);
+                dialog.setTitle( marker.getTitle()).setView(rating)
+
+                        .setMessage( adata.getDescription())
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialoginterface, int i) {
+                            }
+                        }).show();
+                rating.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            }
+        });
 
     }
+
+
+}
 

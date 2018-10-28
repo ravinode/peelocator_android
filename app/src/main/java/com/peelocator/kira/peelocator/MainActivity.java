@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
             Fragment fragment;
             switch (item.getItemId()) {
                 case R.id.navigation_home:
@@ -143,9 +144,9 @@ public class MainActivity extends AppCompatActivity {
 
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                  //  Fragment fragment;
-                    //fragment = new MapLocationFragment();
-                    //loadFragment(fragment);
+                   Fragment fragment;
+                   fragment = new MapLocationFragment();
+                   loadFragment(fragment);
                    Toast.makeText(getApplicationContext(), "Permission granted", Toast.LENGTH_SHORT).show();
 
                 } else {
