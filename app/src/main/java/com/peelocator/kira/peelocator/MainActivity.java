@@ -90,13 +90,8 @@ public class MainActivity extends AppCompatActivity {
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle("")
                         .setMessage("")
@@ -113,14 +108,13 @@ public class MainActivity extends AppCompatActivity {
 
 
             } else {
-                // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         1);
 
-                Fragment fragment;
-                fragment = new MapLocationFragment();
-                loadFragment(fragment);
+//                Fragment fragment;
+//                fragment = new MapLocationFragment();
+//                loadFragment(fragment);
 
             }
             return false;
