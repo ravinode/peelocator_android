@@ -75,17 +75,22 @@ public class MapLocationFragment extends Fragment {
     ArrayList<LatLng> markerPoints;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle                                                                          savedInstanceState)
     {
         View rootView = inflater.inflate(R.layout.activity_maps, container, false);
 
         mMapView= (MapView) rootView.findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
-
         mMapView.onResume();
 
         checkLocationPermission();
         getFlush();
+
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
@@ -102,13 +107,8 @@ public class MapLocationFragment extends Fragment {
                     if (ContextCompat.checkSelfPermission(getActivity(),
                             ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
-
-                        //Request location updates:
                         googleMap.setMyLocationEnabled(true);
-
                         googleMap.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
-
-
                     }
                 }
 
@@ -154,23 +154,6 @@ public class MapLocationFragment extends Fragment {
 
     private void getFlush() {
         client = LocationServices.getFusedLocationProviderClient(getActivity());
-
-//        LocationManager mLocationManager = (LocationManager)getActivity().getSystemService(LOCATION_SERVICE);
-//        List<String> providers = mLocationManager.getProviders(true);
-//        Location bestLocation = null;
-//        for (String provider : providers) {
-//            Toast.makeText(getContext(), "providers:\n" + providers, Toast.LENGTH_LONG).show();
-//            if(ContextCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
-//                l = mLocationManager.getLastKnownLocation(provider);
-//            }
-//            if (l == null) {
-//                continue;
-//            }
-//            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-//                bestLocation = l;
-//            }
-//        }
-
         if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
         }
         client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
@@ -183,14 +166,10 @@ public class MapLocationFragment extends Fragment {
                     req.setLog(location.getLongitude());
                     getLocation(req, getActivity());
                     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 14));
-
                 }
-
             }
         });
     }
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -219,14 +198,8 @@ public class MapLocationFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity(),
                 ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                     ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
                 new AlertDialog.Builder(getActivity())
                         .setTitle("")
                         .setMessage("")

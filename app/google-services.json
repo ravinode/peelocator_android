@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "692431548403",
+    "firebase_url": "https://peelocator-26c3e.firebaseio.com",
+    "project_id": "peelocator-26c3e",
+    "storage_bucket": "peelocator-26c3e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692431548403:android:cb9f70f5edb86854",
+        "android_client_info": {
+          "package_name": "com.peelocator.kira.peelocator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "692431548403-j9889qv3cich70be571dt0vkrm6c0cuf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8qd0YdBxh116BEycrbSNHv204o--8W_s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

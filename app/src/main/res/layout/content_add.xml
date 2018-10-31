@@ -84,15 +84,95 @@
 
         </android.support.design.widget.TextInputLayout>
 
+        <android.support.v7.widget.AppCompatAutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Service Type" />
+
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
 
-            <RadioGroup android:id="@+id/radioGroup" android:contentDescription="Gender" android:layout_width="wrap_content" android:layout_height="wrap_content">
-                <RadioButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/radioMale" android:text="Free" android:checked="true"></RadioButton>
-                <RadioButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/radioFemale" android:text="Paid"></RadioButton>
+            <RadioGroup
+                android:id="@+id/service"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="">
+
+                <RadioButton
+                    android:id="@+id/free"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Free" />
+
+                <RadioButton
+                    android:id="@+id/paid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Paid" />
+
             </RadioGroup>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <RadioGroup
+                android:id="@+id/gender"
+                android:layout_width="295dp"
+                android:layout_height="wrap_content"
+                android:text="">
+
+                <RadioButton
+                    android:id="@+id/male"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Male" />
+
+                <RadioButton
+                    android:id="@+id/female"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Femaile" />
+
+                <RadioButton
+                    android:id="@+id/family"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Family" />
+
+            </RadioGroup>
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.v7.widget.AppCompatAutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Timing" />
+
+        <android.support.v7.widget.AppCompatAutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rating" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </android.support.design.widget.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/cleaning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
 
         </android.support.design.widget.TextInputLayout>
 

@@ -46,7 +46,7 @@ public class CustomInfoWindowGoogleMap implements GoogleMap.InfoWindowAdapter {
         price_v.setText(infoWindowData.getPrice());
         distance_v.setText(infoWindowData.getDistance());
         transport_tv.setText(infoWindowData.getTransport());
-        ratingBar.setRating(Float.parseFloat("2.0"));
+        //ratingBar.setRating(Float.parseFloat("2.0"));
 
         return view;
     }

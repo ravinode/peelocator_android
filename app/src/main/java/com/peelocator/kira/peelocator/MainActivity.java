@@ -26,6 +26,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.peelocator.kira.peelocator.auth.LoginMainActivity;
 import com.peelocator.kira.peelocator.fragment.AddActivity;
 import com.peelocator.kira.peelocator.fragment.MapLocationFragment;
 import com.peelocator.kira.peelocator.fragment.ProfileFragment;
@@ -33,8 +34,6 @@ import com.peelocator.kira.peelocator.fragment.ProfileFragment;
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
-
-    public static int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -47,8 +46,9 @@ public class MainActivity extends AppCompatActivity {
                     fragment = new MapLocationFragment();
                     loadFragment(fragment);
                     return true;
-                case R.id.navigation_dashboard:
-
+                case R.id.profile:
+                    fragment = new ProfileFragment();
+                    loadFragment(fragment);
                     return true;
                 case R.id.navigation_notifications:
 
@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.ic_launcher_round);
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
+//        getSupportActionBar().setDisplayShowHomeEnabled(true);
+//        getSupportActionBar().setLogo(R.mipmap.ic_launcher_round);
+//        getSupportActionBar().setDisplayUseLogoEnabled(true);
         setContentView(R.layout.activity_main);
         statusCheck();
         checkLocationPermission();
