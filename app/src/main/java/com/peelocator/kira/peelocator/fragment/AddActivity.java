@@ -1,6 +1,8 @@
 package com.peelocator.kira.peelocator.fragment;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -40,6 +42,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.peelocator.kira.peelocator.R;
 import com.peelocator.kira.peelocator.pojo.AddFlush;
+import com.peelocator.kira.peelocator.pojo.InfoWindowData;
 import com.peelocator.kira.peelocator.pojo.LatLongReq;
 import com.peelocator.kira.peelocator.util.LoadProperties;
 
@@ -52,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.peelocator.kira.peelocator.util.FlushUtil;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
@@ -93,6 +97,27 @@ public class AddActivity extends Fragment {
         Button submit = (Button) view.findViewById(R.id.submit);
         final RadioButton service_button = (RadioButton)view.findViewById(service.getCheckedRadioButtonId());
         final RadioButton sex_button = (RadioButton)view.findViewById(sex.getCheckedRadioButtonId());
+        final TextView locationTextView = (TextView) view.findViewById(R.id.location);
+
+        client = LocationServices.getFusedLocationProviderClient(getActivity());
+        if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        }
+        client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+
+                        if (location != null) {
+                            Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+                                locationTextView.setText(addresses.get(0).getAddressLine(0));
+                            } catch (Exception e) {
+
+                            }
+                        }
+                    }
+                });
 
         submit.setOnClickListener(new View.OnClickListener()
         {
@@ -129,8 +154,6 @@ public class AddActivity extends Fragment {
             }
         });
 
-
-        final TextView locationTextView = (TextView) view.findViewById(R.id.location);
         button.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -173,7 +196,7 @@ catch (Exception e)
             Toast.makeText(context, "User ID" + user.getEmail(), Toast.LENGTH_LONG).show();
             JSONObject json = new JSONObject();
             try {
-
+                json.put("id",FlushUtil.getID());
                 json.put("userid", user.getEmail());
                 json.put("name", addFlush.getName());
                 json.put("description", addFlush.getDescription());
@@ -184,9 +207,9 @@ catch (Exception e)
                 json.put("longitude", addFlush.getLongitude());
                 json.put("gender", addFlush.getGender());
                 json.put("serviceType", addFlush.getServiceType());
-//                json.put("status","1");
-//                json.put("points","5");
-//                json.put("point_status","P");
+                json.put("status","1");
+                json.put("point","5");
+                json.put("point_status","P");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -203,6 +226,36 @@ catch (Exception e)
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
+
+                            try {
+                                JSONArray jsonArray = response.getJSONArray("pointResp");
+
+                                for (int i = 0, size = jsonArray.length(); i < size; i++) {
+                                    Log.i("Length", "" + jsonArray.length());
+                                    JSONObject objectInArray = jsonArray.getJSONObject(i);
+                                    Log.i("VALUE", "" + objectInArray.getString("points"));
+
+                                    Toast.makeText(context, "Hello" + objectInArray.getString("points"), Toast.LENGTH_LONG).show();
+
+                                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                                    final RatingBar rating = new RatingBar(context);
+
+                                    dialog.setTitle("Points")
+
+                                            .setMessage( "Pending Points: "+ objectInArray.getString("points"))
+                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialoginterface, int i) {
+                                                }
+                                            }).show();
+
+
+
+                                }
+                            } catch (JSONException e) {
+
+                            }
+
+
 
                         }
                     }, new Response.ErrorListener() {
