@@ -93,7 +93,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_welcome);
 
-        int secondsDelayed = 1;
+        int secondsDelayed = 4;
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
