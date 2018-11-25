@@ -1,22 +1,18 @@
 package com.peelocator.kira.peelocator.fragment;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RatingBar;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -30,21 +26,20 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.peelocator.kira.peelocator.ApproveActivity;
 import com.peelocator.kira.peelocator.CustomInfoWindowGoogleMap;
-import com.peelocator.kira.peelocator.MainActivity;
 import com.peelocator.kira.peelocator.R;
+import com.peelocator.kira.peelocator.auth.LoginActivity;
 import com.peelocator.kira.peelocator.pojo.InfoWindowData;
 import com.peelocator.kira.peelocator.pojo.LatLongReq;
 import com.peelocator.kira.peelocator.util.LoadProperties;
@@ -56,11 +51,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.Context.LOCATION_SERVICE;
 
 public class MapLocationFragment extends Fragment {
 
@@ -71,6 +64,7 @@ public class MapLocationFragment extends Fragment {
     static Marker marker;
 
     private FusedLocationProviderClient client;
+    public FirebaseAuth auth;
 
     ArrayList<LatLng> markerPoints;
 
@@ -82,8 +76,8 @@ public class MapLocationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle                                                                          savedInstanceState)
     {
-        View rootView = inflater.inflate(R.layout.activity_maps, container, false);
 
+        View rootView = inflater.inflate(R.layout.activity_maps, container, false);
         mMapView= (MapView) rootView.findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
@@ -120,32 +114,6 @@ public class MapLocationFragment extends Fragment {
                 googleMap.getUiSettings().setRotateGesturesEnabled(true);
                 googleMap.getUiSettings().setMapToolbarEnabled(true);
                 googleMap.getUiSettings().setCompassEnabled(true);
-
-
-//                LocationManager locationManager = (LocationManager)
-//                        getContext().getSystemService(LOCATION_SERVICE);
-//                Criteria criteria = new Criteria();
-//                String bestProvider = String.valueOf(locationManager.getBestProvider(criteria, true)).toString();
-//
-//                Location location = locationManager.getLastKnownLocation(locationManager
-//                        .getBestProvider(criteria, false));
-//                Location location = getLastKnownLocation();
-//                Toast.makeText(getContext(), "Current location:"+location, Toast.LENGTH_LONG).show();
-//                if (null != location) {
-//                    Toast.makeText(getContext(), "Current location:2"+location, Toast.LENGTH_LONG).show();
-//                    double latitude = location.getLatitude();
-//                    double longitude = location.getLongitude();
-//                    LatLongReq req = new LatLongReq();
-//                    req.setLat(latitude);
-//                    req.setLog(longitude);
-//
-//                    Log.i("","++++++++++"+latitude);
-//                    Log.i("","++++++++++"+longitude);
-//                    System.out.print("Location:: "+latitude+" Long ::"+longitude);
-//                    Toast.makeText(getContext(), "Current location:3"+longitude, Toast.LENGTH_LONG).show();
-//
-//                    getLocation(req, getContext());
-
 
             }
         });
@@ -254,7 +222,7 @@ public class MapLocationFragment extends Fragment {
 
         }
     }
-    public static void getLocation(LatLongReq latLong, final Context context) {
+    public  void getLocation(LatLongReq latLong, final Context context) {
         try {
             String url = null;
 
@@ -284,14 +252,16 @@ public class MapLocationFragment extends Fragment {
                                 JSONArray jsonArray = response.getJSONArray("flushLoc");
 
                                 for (int i = 0, size = jsonArray.length(); i < size; i++) {
-                                    Log.i("Length", "" + jsonArray.length());
                                     JSONObject objectInArray = jsonArray.getJSONObject(i);
-                                    Log.i("VALUE", "" + objectInArray.getString("name"));
                                     Double lat = Double.parseDouble(objectInArray.getString("latitude"));
                                     Double log = Double.parseDouble(objectInArray.getString("longitude"));
-                                    drawMarker(context, new LatLng(lat, log), objectInArray.getString("name"), objectInArray.getString("description"), objectInArray.getString("distance"));
-
+                                    String service = objectInArray.getString("serviceType");
+                                    String status = objectInArray.getString("status");
+                                    String id = objectInArray.getString("id");
+                                    String emailID = objectInArray.getString("addedBy");
                                     // Toast.makeText(context, "Hello" + objectInArray, Toast.LENGTH_LONG).show();
+                                    drawMarker(context, new LatLng(lat, log), objectInArray.getString("name"), objectInArray.getString("description"), objectInArray.getString("distance"),service,status,id,emailID);
+
                                 }
                             } catch (JSONException e) {
 
@@ -329,17 +299,25 @@ public class MapLocationFragment extends Fragment {
         }
     }
 
-    private static void drawMarker(final Context context, LatLng point, final String text, final String description, final String distance) {
+    private  void drawMarker(final Context context, LatLng point, final String text, final String description, final String distance, final String serviceType, final String status,final String id,String emailID) {
 
         marker = googleMap.addMarker(new MarkerOptions().position(point).title(text).alpha(0.7f).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         googleMap.getUiSettings().setCompassEnabled(true);
         googleMap.getUiSettings().setMapToolbarEnabled(true);
-        InfoWindowData info = new InfoWindowData();
-        info.setImage("snowqualmie");
-        info.setPrice("Free");
-        info.setDescription(description);
-        info.setDistance("Distance :"+distance);
-        //info.setTransport("Reach the site by bus, car and train.");
+        final InfoWindowData info = new InfoWindowData();
+        info.setImage(id);
+        info.setPrice(serviceType);
+        if(distance.length()>3) {
+            info.setDistance(distance.substring(0, 3) + " Miles");
+        }
+        else
+        {
+            info.setDistance(distance + " Miles");
+        }
+
+        info.setStatus(status);
+        info.setId(text);
+        info.setEmailID(emailID);
 
         marker.setTag(info);
         CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(context);
@@ -354,22 +332,46 @@ public class MapLocationFragment extends Fragment {
             @Override
             public void onInfoWindowClick(Marker marker) {
 
-                Log.i("+++++","Ravi");
+                FirebaseUser user = null;
+                user = FirebaseAuth.getInstance().getCurrentUser();
+                InfoWindowData infoWindowData = (InfoWindowData) marker.getTag();
+                if(null == user)
+                {
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    startActivity(intent);
+                }
+                else if(!user.getEmail().equalsIgnoreCase(infoWindowData.getEmailID()))
+                {
+
+
+                    Intent intent = new Intent(getActivity(), ApproveActivity.class);
+                    intent.putExtra("title",marker.getTitle());
+
+                    intent.putExtra("id",infoWindowData.getImage());
+                    intent.putExtra("name",infoWindowData.getId());
+                    intent.putExtra("desc",description);
+                    intent.putExtra("distance",distance);
 
 
 
-                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-                final RatingBar rating = new RatingBar(context);
-                InfoWindowData adata = (InfoWindowData) marker.getTag();
-                rating.setNumStars(5);
-                dialog.setTitle( marker.getTitle()).setView(rating)
 
-                        .setMessage( adata.getDescription())
-                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialoginterface, int i) {
+                    startActivity(intent);
+
+                }
+                else if(user.getEmail().equalsIgnoreCase(infoWindowData.getEmailID()))
+                {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                  //  final RatingBar rating = new RatingBar(context);
+                    dialog.setTitle("Alert")
+
+                            .setMessage("You can rate your own post" )
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialoginterface, int i) {
                             }
-                        }).show();
-                rating.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                            }).show();
+                    //rating.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+                }
+
 
             }
         });

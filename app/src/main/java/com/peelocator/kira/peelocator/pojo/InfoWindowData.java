@@ -5,7 +5,9 @@ public class InfoWindowData {
     private String price;
     private String distance;
     private String description;
-    private String transport;
+    private String emailID;
+    private String status;
+    private String id;
 
     public String getImage() {
         return image;
@@ -31,12 +33,12 @@ public class InfoWindowData {
         this.distance = distance;
     }
 
-    public String getTransport() {
-        return transport;
+    public String getEmailID() {
+        return emailID;
     }
 
-    public void setTransport(String transport) {
-        this.transport = transport;
+    public void setEmailID(String emailID) {
+        this.emailID = emailID;
     }
 
     public String getDescription() {
@@ -45,5 +47,21 @@ public class InfoWindowData {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,66 +10,44 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp">
 
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="@dimen/activity_horizontal_margin"
-            xmlns:android="http://schemas.android.com/apk/res/android">
+            android:padding="@dimen/activity_horizontal_margin">
 
+            <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/locationTxt"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="Location"
+                android:textSize="25dp"
+                android:textStyle="bold|italic" />
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/space"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:textSize="35dp"
-                    android:textStyle="bold" />
-
-
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
+            <EditText
+                android:id="@+id/locationEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-               >
-
-                <TextView
-                    android:id="@+id/location"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:hint="Get Location"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/space1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:textSize="20dp"
-                    android:textStyle="bold" />
-
-
-                <Button
-                    android:id="@+id/locationButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/baseline_near_me_loc_24dp"
-                    ></Button>
-
-
+                android:gravity="center_horizontal"
+                android:textStyle="bold" />
+                />
 
             </android.support.design.widget.TextInputLayout>
+
+
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -83,9 +60,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:hint="Name"
-                    android:textColorHint="@android:color/black"
                     android:inputType="textPersonName"
-                    />
+                    android:textColorHint="@android:color/black" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -111,9 +87,9 @@
                 android:id="@+id/textview"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:text="Service Type"
                 android:textSize="25dp"
-                android:textStyle="bold|italic"
-                android:text="Service Type" />
+                android:textStyle="bold|italic" />
 
             <TextView
                 android:id="@+id/space5"
@@ -132,6 +108,7 @@
                     android:id="@+id/service"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
                     android:text="">
 
                     <RadioButton
@@ -163,9 +140,9 @@
                 android:id="@+id/gendertext"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:text="Gender"
                 android:textSize="25dp"
-                android:textStyle="bold|italic"
-                android:text="Gender" />
+                android:textStyle="bold|italic" />
 
             <TextView
                 android:id="@+id/space4"
@@ -184,6 +161,7 @@
                     android:id="@+id/gender"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
                     android:text="">
 
                     <RadioButton
@@ -220,16 +198,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:textSize="10dp"
+                android:textSize="20dp"
                 android:textStyle="bold" />
 
             <TextView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/ratingText"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:text="Rating"
                 android:textSize="25dp"
-                android:textStyle="bold|italic"
-                android:text="Rating" />
+                android:textStyle="bold|italic" />
 
             <TextView
                 android:id="@+id/space6"
@@ -257,8 +235,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:numStars="4"
-                    android:stepSize="1.0"
-                    android:rating="5" />
+                    android:rating="5"
+                    android:stepSize="1.0" />
 
 
                 <TextView
@@ -271,8 +249,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:numStars="4"
-                    android:stepSize="1.0"
-                    android:rating="5" />
+                    android:rating="5"
+                    android:stepSize="1.0" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -284,8 +262,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:numStars="4"
-                    android:stepSize="1.0"
-                    android:rating="5" />
+                    android:rating="5"
+                    android:stepSize="1.0" />
 
 
             </android.support.design.widget.TextInputLayout>
@@ -300,8 +278,7 @@
                 android:layout_height="wrap_content"
                 android:text="Submit"
                 android:textColor="@android:color/white"
-                app:backgroundTint="@android:color/holo_blue_dark"/>
-
+                app:backgroundTint="@android:color/holo_blue_dark" />
 
 
             <Button

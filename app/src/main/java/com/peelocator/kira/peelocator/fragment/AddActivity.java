@@ -1,19 +1,14 @@
 package com.peelocator.kira.peelocator.fragment;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +18,6 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RatingBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -33,17 +27,22 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.peelocator.kira.peelocator.R;
+import com.peelocator.kira.peelocator.auth.LoginActivity;
 import com.peelocator.kira.peelocator.pojo.AddFlush;
-import com.peelocator.kira.peelocator.pojo.InfoWindowData;
-import com.peelocator.kira.peelocator.pojo.LatLongReq;
+import com.peelocator.kira.peelocator.pojo.Point;
+import com.peelocator.kira.peelocator.util.FlushUtil;
 import com.peelocator.kira.peelocator.util.LoadProperties;
 
 import org.json.JSONArray;
@@ -51,18 +50,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import com.peelocator.kira.peelocator.util.FlushUtil;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
+import static com.android.volley.VolleyLog.TAG;
 
-public class AddActivity extends Fragment {
+public class AddActivity extends Fragment{
 
+    private SupportPlaceAutocompleteFragment placeAutocompleteFragment;
+    int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
     private FusedLocationProviderClient client;
-
+    EditText loc = null;
+    FirebaseUser user = null;
+    static String lat;
+    static String lon;
     public AddActivity() {
         // Required empty public constructor
     }
@@ -77,17 +84,30 @@ public class AddActivity extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if(null==user)
+        {
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if(null==user)
+        {
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+        }
 
         View view = inflater.inflate(R.layout.activity_add, container, false);
-        Button button = (Button) view.findViewById(R.id.locationButton);
+
         final EditText name = (EditText)view.findViewById(R.id.name);
+        loc = (EditText)view.findViewById(R.id.locationEdit);
         final EditText desc = (EditText)view.findViewById(R.id.desc);
         RadioGroup service = (RadioGroup)view.findViewById(R.id.service);
         RadioGroup sex = (RadioGroup)view.findViewById(R.id.gender);
@@ -97,27 +117,66 @@ public class AddActivity extends Fragment {
         Button submit = (Button) view.findViewById(R.id.submit);
         final RadioButton service_button = (RadioButton)view.findViewById(service.getCheckedRadioButtonId());
         final RadioButton sex_button = (RadioButton)view.findViewById(sex.getCheckedRadioButtonId());
-        final TextView locationTextView = (TextView) view.findViewById(R.id.location);
+
+        loc.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    try {
+                        Intent intent =
+                                new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                        .build(getActivity());
+                        startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                    } catch (GooglePlayServicesRepairableException e) {
+                        // TODO: Handle the error.
+                    } catch (GooglePlayServicesNotAvailableException e) {
+                        // TODO: Handle the error.
+                    }
+
+                }
+            }
+        });
+
+
+
 
         client = LocationServices.getFusedLocationProviderClient(getActivity());
         if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
         }
         client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
+            @Override
+            public void onSuccess(Location location) {
 
-                        if (location != null) {
-                            Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
-                            try {
-                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                if (location != null) {
+                    Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses != null) {
+                            Address returnedAddress = addresses.get(0);
+                            StringBuilder strReturnedAddress = new StringBuilder("");
 
-                                locationTextView.setText(addresses.get(0).getAddressLine(0));
-                            } catch (Exception e) {
-
+                            for (int i = 0; i <= returnedAddress.getMaxAddressLineIndex(); i++) {
+                                strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
                             }
+
+                            loc.setText(strReturnedAddress.toString().trim());
+                            lat = String.valueOf(location.getLatitude());
+                            lon = String.valueOf(location.getLongitude());
+
+                           // Log.w("My Current loction address", strReturnedAddress.toString());
+                        } else {
+                          //  Log.w("My Current loction address", "No Address returned!");
                         }
+
+
+
+                    } catch (Exception e) {
+
                     }
-                });
+                }
+            }
+        });
 
         submit.setOnClickListener(new View.OnClickListener()
         {
@@ -139,8 +198,8 @@ public class AddActivity extends Fragment {
                             addReq.setDescription(desc.getText().toString());
                             addReq.setServiceType(service_button.getText().toString());
                             addReq.setGender(sex_button.getText().toString());
-                           // addReq.setC_rating(Integer.toString(cleaness.getNumStars()));
-                           // addReq.setS_rating(Integer.toString(service_Level.getNumStars()));
+                            // addReq.setC_rating(Integer.toString(cleaness.getNumStars()));
+                            // addReq.setS_rating(Integer.toString(service_Level.getNumStars()));
                             //addReq.setRating(Integer.toString(overall.getNumStars()));
                             addReq.setLatitude(String.valueOf(location.getLatitude()));
                             addReq.setLongitude(String.valueOf(location.getLongitude()));
@@ -154,46 +213,39 @@ public class AddActivity extends Fragment {
             }
         });
 
-        button.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-
-
-                client = LocationServices.getFusedLocationProviderClient(getActivity());
-                if (ActivityCompat.checkSelfPermission(getActivity(), ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                }
-                client.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-
-                        if (location != null) {
-                            Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
-try {
-    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-
-    locationTextView.setText(addresses.get(0).getAddressLine(0));
-}
-catch (Exception e)
-{
-
-}
-                        }
-                    }
-                });
-            }
-        });
 
         return view;
     }
 
-    public static void addFlush(AddFlush addFlush, final Context context) {
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlaceAutocomplete.getPlace(getActivity(), data);
+
+                Log.i(TAG, "Place:+++ " +  place.getLatLng().latitude);
+                lon = String.valueOf(place.getLatLng().longitude);
+                lat = String.valueOf(place.getLatLng().latitude);
+                loc.setText(place.getAddress());
+
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(getActivity(), data);
+                // TODO: Handle the error.
+                Log.i(TAG, status.getStatusMessage());
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
+    }
+
+    public  void addFlush(AddFlush addFlush, final Context context) {
         try {
             FirebaseAuth auth;
             String url = null;
-            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            Toast.makeText(context, "User ID" + user.getEmail(), Toast.LENGTH_LONG).show();
+
+            // Toast.makeText(context, "User ID" + user.getEmail(), Toast.LENGTH_LONG).show();
             JSONObject json = new JSONObject();
             try {
                 json.put("id",FlushUtil.getID());
@@ -203,8 +255,8 @@ catch (Exception e)
                 json.put("rating", addFlush.getRating());
                 json.put("s_rating", addFlush.getS_rating());
                 json.put("c_rating", addFlush.getC_rating());
-                json.put("latitude", addFlush.getLatitude());
-                json.put("longitude", addFlush.getLongitude());
+                json.put("latitude", lat);
+                json.put("longitude", lon);
                 json.put("gender", addFlush.getGender());
                 json.put("serviceType", addFlush.getServiceType());
                 json.put("status","1");
@@ -226,36 +278,25 @@ catch (Exception e)
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-
+                            List<Point> pointList = new ArrayList<>();
                             try {
                                 JSONArray jsonArray = response.getJSONArray("pointResp");
 
                                 for (int i = 0, size = jsonArray.length(); i < size; i++) {
-                                    Log.i("Length", "" + jsonArray.length());
+                                    Point point = new Point();
                                     JSONObject objectInArray = jsonArray.getJSONObject(i);
-                                    Log.i("VALUE", "" + objectInArray.getString("points"));
-
-                                    Toast.makeText(context, "Hello" + objectInArray.getString("points"), Toast.LENGTH_LONG).show();
-
-                                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-                                    final RatingBar rating = new RatingBar(context);
-
-                                    dialog.setTitle("Points")
-
-                                            .setMessage( "Pending Points: "+ objectInArray.getString("points"))
-                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialoginterface, int i) {
-                                                }
-                                            }).show();
-
-
-
+                                    point.setPoints(objectInArray.getString("points"));
+                                    point.setPointStatus(objectInArray.getString("pointStatus"));
+                                    //   Toast.makeText(context, "Hello" + objectInArray.getString("points"), Toast.LENGTH_LONG).show();
+                                    pointList.add(point);
                                 }
                             } catch (JSONException e) {
 
                             }
 
-
+                            Intent intent = new Intent(getActivity(), ScoreActivity.class);
+                            intent.putExtra("list",(ArrayList<Point>)pointList);
+                            startActivity(intent);
 
                         }
                     }, new Response.ErrorListener() {

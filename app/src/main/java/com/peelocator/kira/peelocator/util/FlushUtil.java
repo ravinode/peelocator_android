@@ -1,8 +1,8 @@
 package com.peelocator.kira.peelocator.util;
 
-import java.util.UUID;
-import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
 
 
 public class FlushUtil {
